@@ -56,6 +56,10 @@ app = App { appDraw = drawGame
           , appAttrMap = const theMap
           }
 
+addscorelist :: Snake.Game -> [Integer] -> Snake.Game
+addscorelist g@Snake.Game{ _bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=l, _paused=p,_score=s,_locked=m ,_food=f,_historyscore = old} h = 
+  Snake.Game{ _bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=l, _paused=p,_score=s,_locked=m ,_food=f,_historyscore = h}
+
 split :: String -> [String] 
 split [] = [""] 
 split (c:cs) 
@@ -63,13 +67,16 @@ split (c:cs)
     | otherwise = (c : head rest) : tail rest 
     where rest = split cs
 
+-- scorelist :: [Integer]
+-- scorelist = [1,2,3,4,5]
+
 main :: IO ()
 main = do
   chan <- newBChan 10
   forkIO $ forever $ do
     writeBChan chan Tick
     threadDelay 400000 -- decides how fast your game moves
-  g <- initGame
+  g <- initGame 
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
   void $ customMain initialVty builder (Just chan) app g
@@ -170,9 +177,9 @@ drawScore n = withBorderStyle BS.unicodeBold
 
 
 drawGameOver :: Game ->  Widget Name
-drawGameOver g  =  vBox $ str "   Game Over" :
+drawGameOver g@Game{_historyscore=history}  =  vBox $ str "   Game Over" :
                              str " Your Score is" :
-                             (str <$>  ["\t" <>  (show i) | i <- [g ^.score] ])
+                             (str <$>  ["\t" <>  (show i) | i <- history ])
 
 -- "Line " <> 
 -- listDrawElement :: (Show a) => Bool -> a -> Widget ()
