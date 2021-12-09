@@ -12,7 +12,7 @@ module Snake
   , dead,  score, bird1, bird2
   , height, width
   ) where
-
+import System.IO
 import Control.Applicative ((<|>))
 import Control.Monad (guard)
 import Data.Maybe (fromMaybe)
@@ -76,8 +76,9 @@ split (c:cs)
 -- | Step forward in time
 step :: Game -> Game
 step g@Game { _bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=l, _paused=p,_score=s,_locked=m ,_food=f,_historyscore = h} = if isdie g == True
+                                                                          -- then Game{_bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=True, _paused=p,_score=s,_locked=m,_food=f,_historyscore = h}
                                                                           then Game{_bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=True, _paused=p,_score=s,_locked=m,_food=f,_historyscore = h}
-                                                                          else move Game { _bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=l, _paused=p,_score=s+10,_locked=m ,_food=f,_historyscore = h}                                                                
+                                                                          else move Game { _bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=l, _paused=p,_score=s+5,_locked=m ,_food=f,_historyscore = h}                                                                
 -- step s = move 
 -- -- step s = flip execState s . runMaybeT $ do
 
@@ -98,10 +99,19 @@ step g@Game { _bird1=a,_bird2=b,_isnetwork=net,_dir =d, _dead=l, _paused=p,_scor
 --   MaybeT . fmap Just $ dead .= True
 
 
+writescore::Game -> IO Game
+writescore g@Game { _dir = d, _bird1 = ((V2 xm ym) :<| _) ,_score=s} = do
+      let x = show s
+      appendFile "/home/cse230/Desktop/test.txt" (x ++ "\n")
+      return g
+
+
 isdie :: Game -> Bool
-isdie g@Game { _dir = d, _bird1 = ((V2 xm ym) :<| _) } = if ym == 1 || ym==20
-                                                         then True
-                                                         else False
+isdie g@Game { _dir = d, _bird1 = ((V2 xm ym) :<| _) ,_score=s} = if ym == 1 || ym==20 then True else False
+
+
+
+-- if ym == 1 || ym==20 then True else False
 -- iscollision :: Game -> Bool
 -- iscollision 
 
